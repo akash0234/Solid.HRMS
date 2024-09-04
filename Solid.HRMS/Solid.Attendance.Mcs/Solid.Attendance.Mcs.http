@@ -1,0 +1,6 @@
+@Solid.Attendance.Mcs_HostAddress = http://localhost:5166
+
+GET {{Solid.Attendance.Mcs_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
