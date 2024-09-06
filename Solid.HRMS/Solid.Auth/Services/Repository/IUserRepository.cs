@@ -29,7 +29,13 @@ namespace Solid.Auth.Services.Repository
         /// </summary>
         /// <param name="email"></param>
         /// <returns></returns>
-        Task<bool> ValidateUserAsync(LoginUserCommand command);
+        Task<UserModel> ValidateUserAsync(LoginUserCommand command);
+        /// <summary>
+        /// Login User
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns></returns>
+        Task AddUserTokenLogAsync(AddUserTokenLogCommand user);
         //Task<User> GetUserByUsernameAsync(string username);
     }
 }

@@ -6,6 +6,7 @@
         public const string GetUserByID = "GetUserByID";
         public const string GetUserByEmailID = "GetUserByEmailID";
         public const string GetHasSaltByID = "GetHasSaltByID";
+        public const string InsertUserTokenLog = "InsertUserTokenLog";
 
        
     }

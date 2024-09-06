@@ -53,7 +53,8 @@ builder.Services.AddScoped<IDMLServices>(sp =>
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService,UserService>();
 builder.Services.AddScoped<ICommandHandler<AddUserCommand>, AddUserCommandHandler>();
-builder.Services.AddScoped<ICommandHandler<LoginUserCommand>, LoginUserCommandHandler>();
+builder.Services.AddScoped<ICommandHandler<AddUserTokenLogCommand>, AddUserTokenLogCommandHandler>();
+builder.Services.AddScoped<ICommandHandler<LoginUserCommand,UserModel>, LoginUserCommandHandler>();
 builder.Services.AddScoped<IQueryHandler<GetUserByEmailQuery, UserModel>, GetUserByEmailQueryHandler>();
 
 var app = builder.Build();

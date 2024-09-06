@@ -12,27 +12,25 @@ using Solid.Auth.Services.Repository;
 
 namespace Solid.Auth.Models.CQRS.Handlers
 {
-    public class LoginUserCommandHandler : ICommandHandler<LoginUserCommand,UserModel>
+    public class AddUserTokenLogCommandHandler : ICommandHandler<AddUserTokenLogCommand>
     {
         private readonly IUserRepository _userRepo;
-        public LoginUserCommandHandler(IUserRepository userRepository)
+        public AddUserTokenLogCommandHandler(IUserRepository userRepository)
         {
             this._userRepo = userRepository;
         }
 
 
 
-        public async Task<UserModel> ExecuteAsync(LoginUserCommand command)
+        public async Task ExecuteAsync(AddUserTokenLogCommand command)
         {
             try
             {
-               return await _userRepo.ValidateUserAsync(command);
+                await _userRepo.AddUserTokenLogAsync(command);
             }
-            catch (Exception ex) { Console.WriteLine(ex.Message); return null; }
+            catch (Exception ex) { Console.WriteLine(ex.Message); }
         }
-
-       
-        
     }
+   
 
 }

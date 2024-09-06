@@ -10,6 +10,6 @@ namespace Solid.Auth.Models
     {
         public string Token { get; set; }
         public string RefreshToken { get; set; }
-        public string ExpiresIn { get; set; }
+        public DateTime ExpiresIn { get; set; }
     }
 }

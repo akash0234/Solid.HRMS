@@ -11,4 +11,9 @@ namespace Solid.Core.Services.Repository.CQRS
         Task ExecuteAsync(TCommand command);
      
     }
+    public interface ICommandHandler<TCommand, TResult> where TCommand : ICommand<TResult>
+    {
+        Task<TResult> ExecuteAsync(TCommand command);
+
+    }
 }

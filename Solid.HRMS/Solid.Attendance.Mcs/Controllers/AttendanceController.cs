@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Solid.Attendance.Mcs.Models;
@@ -19,6 +20,7 @@ namespace Solid.Attendance.Mcs.Controllers
         }
         [HttpGet]
         [Route("GetAttendance")]
+        [Authorize(Roles ="User")]
         public async Task<IActionResult> GetAttendance(DateTime StartDate, DateTime EndDate)
         {
             try

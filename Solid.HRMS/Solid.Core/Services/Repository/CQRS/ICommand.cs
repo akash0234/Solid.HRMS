@@ -9,4 +9,7 @@ namespace Solid.Core.Services.Repository.CQRS
     public interface ICommand
     {
     }
+    public interface ICommand<TResult>
+    {
+    }
 }

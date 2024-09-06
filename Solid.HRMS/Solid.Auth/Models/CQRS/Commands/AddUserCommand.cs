@@ -16,8 +16,8 @@ namespace Solid.Auth.Models.CQRS.Commands
         public string Email { get; set; }
       
         public string RoleIDs { get; set; } // Comma separated Role
-        public byte[] PasswordHash { get; set; }
-        public byte[] Salt { get; set; }
+        public string PasswordHash { get; set; }
+        public string Salt { get; set; }
         public int OrganisationID { get; set; }
     }
 }

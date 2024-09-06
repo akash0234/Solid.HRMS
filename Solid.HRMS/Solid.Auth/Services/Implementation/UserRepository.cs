@@ -8,7 +8,7 @@ using Solid.Core.Services.Repository;
 
 namespace Solid.Auth.Services.Implementation
 {
-    public class UserRepository :IUserRepository
+    public class UserRepository : IUserRepository
     {
         private readonly IDMLServices _dmlServices;
 
@@ -19,7 +19,11 @@ namespace Solid.Auth.Services.Implementation
 
         public async Task AddUserAsync(AddUserCommand user)
         {
-            var response = await _dmlServices.ExecuteStoredProcedureNonQueryAsync(StoreProcedures.InsertUpdateUser, user,"ReturnID");
+            var response = await _dmlServices.ExecuteStoredProcedureNonQueryAsync(StoreProcedures.InsertUpdateUser, user, "ReturnID");
+        }
+        public async Task AddUserTokenLogAsync(AddUserTokenLogCommand user)
+        {
+            var response = await _dmlServices.ExecuteStoredProcedureNonQueryAsync(StoreProcedures.InsertUserTokenLog, user);
         }
         public async Task<UserModel> GetUserAsync(GetUserByEmailQuery query)
         {
@@ -42,12 +46,12 @@ namespace Solid.Auth.Services.Implementation
                     return null;
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
                 return null;
             }
-            
+
         }
         public async Task<UserModel> GetUserAsync(GetUserByIdQuery query)
         {
@@ -70,39 +74,54 @@ namespace Solid.Auth.Services.Implementation
 
 
         }
-        public async Task<bool> ValidateUserAsync(LoginUserCommand command)
+        public async Task<UserModel> ValidateUserAsync(LoginUserCommand command)
         {
-            // Define parameters for the stored procedure
-            var emailParam = new { UserEmail = command.UserName };
-
-            // Execute stored procedure to get user details and salt
-            var userDST = await _dmlServices.GetDataTable(StoreProcedures.GetHasSaltByID, emailParam);
-
-            if (userDST != null && userDST.Rows.Count > 0)
+            var checkUser = await GetUserAsync(new GetUserByEmailQuery() { UserEmail = command.UserName });
+            if (checkUser == null)
             {
-              
-                byte[] salt = (byte[])userDST.Rows[0]["Salt"];
-                byte[] hash = (byte[])userDST.Rows[0]["PasswordHash"];
-
-                // Verify the password
-                var isPasswordValid = HashingUtility.ValidatePassword(command.Password, hash , salt);
-                if (!isPasswordValid)
-                {
-                    // Invalid password
-                    return false;
-                }
-                else
-                {
-                    return false;
-                }
-
-          
+                return null;
             }
             else
             {
-                // No data found
-                return false;
+                // Define parameters for the stored procedure
+                var emailParam = new { UserEmail = command.UserName };
+
+                // Execute stored procedure to get user details and salt
+                var userDST = await _dmlServices.GetDataTable(StoreProcedures.GetHasSaltByID, emailParam);
+
+                if (userDST != null && userDST.Rows.Count > 0)
+                {
+                    var passwordHashModel = new PasswordHashModel()
+                    {
+                        PasswordHash = Convert.ToString(userDST.Rows[0]["PasswordHash"]),
+                        PasswordSalt = Convert.ToString(userDST.Rows[0]["Salt"])
+                    };
+
+
+
+                    // Verify the password
+                    var isPasswordValid = HashingUtility.VerifyPassword(passwordHashModel, command.Password);
+                    if (isPasswordValid)
+                    {
+                        
+
+                        return checkUser;
+                    }
+                    else
+                    {
+                        return null;
+                    }
+
+                }
+                else
+                {
+                    // No data found
+                    return null;
+                }
             }
+
+
+            
         }
 
     }

@@ -1,44 +1,56 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
-using Konscious.Security.Cryptography;
+using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 namespace Solid.Auth
 {
     public static class HashingUtility
     {
-        private const int SaltSize = 16; // Size of the salt in bytes
-        private const int HashSize = 32; // Size of the hash in bytes
-        private const int Iterations = 4; // Number of iterations for Argon2
+        
 
         // Generate a random salt
-        public static byte[] GenerateSalt()
+        public static PasswordHashModel GenerateHashPassword(string password, byte[] salt = null, bool needsOnlyHash = false)
         {
-            var saltBytes = new byte[SaltSize];
-            using (var rng = RandomNumberGenerator.Create())
+            if (salt == null || salt.Length != 16)
             {
-                rng.GetBytes(saltBytes);
+                // generate a 128-bit salt using a secure PRNG
+                salt = new byte[128 / 8];
+                using (var rng = RandomNumberGenerator.Create())
+                {
+                    rng.GetBytes(salt);
+                }
             }
-            return saltBytes;
+
+            string hashed = Convert.ToBase64String(KeyDerivation.Pbkdf2(
+                password: password,
+                salt: salt,
+                prf: KeyDerivationPrf.HMACSHA256,
+                iterationCount: 10000,
+                numBytesRequested: 256 / 8));
+
+            if (needsOnlyHash) return new PasswordHashModel() { PasswordHash = hashed};
+            Console.WriteLine($"salt: {Convert.ToBase64String(salt)}");
+            Console.WriteLine($"hashed: {hashed}");
+            // password will be concatenated with salt using ':'
+            return new PasswordHashModel() { PasswordHash = hashed,PasswordSalt = Convert.ToBase64String(salt) };
         }
 
-        // Hash a password with the provided salt using Argon2
-        public static byte[] HashPassword(string password, byte[] salt)
+        public static bool VerifyPassword(PasswordHashModel hashedPasswordWithSalt, string passwordToCheck)
         {
-            var argon2 = new Argon2id(Encoding.UTF8.GetBytes(password))
-            {
-                Salt = salt,
-                DegreeOfParallelism = 8, // number of threads to use
-                MemorySize = 8192, // memory size in KB
-                Iterations = Iterations
-            };
-
-            return argon2.GetBytes(HashSize);
+            // retrieve both salt and password from 'hashedPasswordWithSalt'
+           
+            
+            var salt = Convert.FromBase64String(hashedPasswordWithSalt.PasswordSalt);
+            if (salt == null)
+                return false;
+            // hash the given password
+            var hashOfpasswordToCheck = GenerateHashPassword(passwordToCheck, salt, true);
+            // compare both hashes
+            return String.Compare(hashedPasswordWithSalt.PasswordHash, hashOfpasswordToCheck.PasswordHash) == 0;
         }
-
-        // Validate a password against a hashed password
-        public static bool ValidatePassword(string password, byte[] salt, byte[] hashedPassword)
-        {
-            var hashToCompare = HashPassword(password, salt);
-            return CryptographicOperations.FixedTimeEquals(hashToCompare, hashedPassword);
-        }
+    }
+    public class PasswordHashModel
+    {
+        public string PasswordHash { get; set; }
+        public string PasswordSalt { get; set; }
     }
 }
